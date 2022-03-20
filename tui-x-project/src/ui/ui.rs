@@ -1,6 +1,6 @@
 //
 use anyhow::Result;
-use tui::{backend::{TermionBackend, Backend}, Frame};
+use tui::{backend::{TermionBackend, Backend}, Frame, widgets::{Block, BorderType, Borders}};
 use crate::inputs::EventHost;
 use tui::Terminal;
 use termion::screen::AlternateScreen;
@@ -20,7 +20,7 @@ impl<B> Draw<B>
 where
     B: Backend,
 {
-    fn new() -> Result<Draw<TTerminal>> {
+    pub fn new() -> Result<Draw<TTerminal>> {
         let stdout = io::stdout().into_raw_mode()?;
         let stdout = MouseTerminal::from(stdout);
         let stdout = AlternateScreen::from(stdout);
@@ -33,7 +33,16 @@ where
         })
     }
 
-    fn draw(&mut self, handler: EventHost) -> Result<()> {
+    pub fn draw(&mut self, handler: EventHost) -> Result<()> {
+
+        self.terminal.draw(|mut f | {
+
+            let block = Block::default()
+                .title("Block")
+                .borders(Borders::ALL);
+
+            f.render_widget(block, f.size());
+        })?;
 
         Ok(())
     }

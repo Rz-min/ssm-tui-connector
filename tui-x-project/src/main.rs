@@ -1,11 +1,12 @@
 //
 use anyhow::Result;
 use structopt::{clap, StructOpt};
-use url::{Url, ParseError};
+use url::Url;
 use tokio::sync::mpsc;
 
 mod ui;
 mod inputs;
+mod app;
 
 use self::ui::Draw;
 
@@ -22,13 +23,10 @@ struct Opt {
 #[tokio::main]
 async fn main() -> Result<()> {
 
-    let (data_send_tx, data_resv_rx) = mpsc::channel(1);
+    let (data_send_tx, data_recv_rx) = mpsc::channel(1);
 
-    let ui_manager = Draw::new()?ß;
+    let ui_manager = Draw::new()?;
 
-    let crypt_task = tokio::spawn(async move {
-
-    });
 
     'outer: loop {
         'inner: loop {

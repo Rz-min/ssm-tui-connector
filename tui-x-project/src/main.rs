@@ -8,7 +8,7 @@ mod ui;
 mod inputs;
 mod app;
 
-use self::ui::Draw;
+use self::app::App;
 
 
 #[derive(Debug, StructOpt)]
@@ -23,24 +23,17 @@ struct Opt {
 #[tokio::main]
 async fn main() -> Result<()> {
 
-    let (data_send_tx, data_recv_rx) = mpsc::channel(1);
+    //let (data_send_tx, data_recv_rx) = mpsc::channel(1);
 
-    let ui_manager = Draw::new()?;
+    let mut app = App::new().unwrap();
 
 
-    'outer: loop {
-        'inner: loop {
-            ui_manager.draw();
-
-            break 'inner;
-        }
-
-        break 'outer;
+    loop {
+        app.draw();
+        
+        break;
     }
 
-    if let (Err(e), ) = tokio::join!(crypt_task) {
-        println!("failed at join: {:?}", &e);
-    }
 
     Ok(())
 }

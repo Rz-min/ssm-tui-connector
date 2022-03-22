@@ -8,19 +8,13 @@ use termion::input::MouseTerminal;
 use termion::raw::{RawTerminal, IntoRawMode};
 use std::io::{self, Stdout};
 
-type ATerminal = TermionBackend<RawTerminal<Stdout>>;
-struct App<B>
-where
-    B: Backend
-{
-    terminal: Terminal<B>
+type ATerminal = TermionBackend<AlternateScreen<MouseTerminal<RawTerminal<Stdout>>>>;
+pub struct App {
+    pub terminal: Terminal<ATerminal>,
 }
 
-impl<B> App<B>
-where
-    B: Backend,
-{
-    pub fn new() -> Result<App<ATerminal>> {
+impl App {
+    pub fn new() -> Result<App> {
         let stdout = io::stdout().into_raw_mode()?;
         let stdout = MouseTerminal::from(stdout);
         let stdout = AlternateScreen::from(stdout);
@@ -34,7 +28,7 @@ where
         })
     }
 
-    pub fn draw(&mut self, handler: EventHost) -> Result<()> {
+    pub fn draw(&mut self) -> Result<()> {
 
         self.terminal.draw(|mut f | {
 

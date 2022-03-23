@@ -1,15 +1,17 @@
 //
+mod ui;
+mod inputs;
+mod app;
+mod vc;
+
+use self::vc::vc::VCManager;
+use self::app::App;
+use self::inputs::EventHost;
+
 use anyhow::Result;
 use structopt::{clap, StructOpt};
 use url::Url;
 use tokio::sync::mpsc;
-
-mod ui;
-mod inputs;
-mod app;
-
-use self::app::App;
-
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "tui x project")]
@@ -23,7 +25,11 @@ struct Opt {
 #[tokio::main]
 async fn main() -> Result<()> {
 
-    //let (data_send_tx, data_recv_rx) = mpsc::channel(1);
+    let (handle_tx, handle_rx) = mpsc::channel(1);
+
+    let handler = EventHost::new();
+    
+    let vc = VCManager::new();
 
     let mut app = App::new().unwrap();
 

@@ -6,12 +6,12 @@ mod vc;
 
 use self::vc::vc::VCManager;
 use self::app::App;
-use self::inputs::EventHost;
+use self::inputs::{EventHost, Signal};
 
 use anyhow::Result;
 use structopt::{clap, StructOpt};
 use url::Url;
-use tokio::sync::mpsc;
+use termion::event::Key;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "tui x project")]
@@ -25,9 +25,7 @@ struct Opt {
 #[tokio::main]
 async fn main() -> Result<()> {
 
-    let (handle_tx, handle_rx) = mpsc::channel(1);
-
-    let handler = EventHost::new();
+    let mut handler = EventHost::new();
     
     let vc = VCManager::new();
 
@@ -35,11 +33,28 @@ async fn main() -> Result<()> {
 
 
     loop {
-        app.draw();
+        match app.draw() {
+            Ok(v) => {
+                match handler.on_event() {
+                    Signal::Finish => {
+                        match handler.get_input() {
+                            Key::Char('q') => {
+                                break;
+                            }
+                            _ => continue,
+                        }
+                    }
+                    Signal::Other => continue,
+                }
+            }
+            Err(e) => {
+
+            }
+        }
         
-        break;
     }
 
+    handler.input_task.join().unwrap();
 
     Ok(())
 }

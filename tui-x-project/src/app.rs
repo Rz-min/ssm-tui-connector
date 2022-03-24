@@ -37,6 +37,7 @@ impl App {
                 .borders(Borders::ALL);
 
             f.render_widget(block, f.size());
+            print!("in draw");
         })?;
 
         Ok(())

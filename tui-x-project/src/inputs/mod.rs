@@ -1,4 +1,4 @@
 //
 mod events;
 
-pub use self::events::EventHost;
+pub use self::events::{EventHost, Signal};

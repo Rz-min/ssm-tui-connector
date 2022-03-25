@@ -1,6 +1,6 @@
 //
 use std::{
-    io, time::Duration, sync::mpsc, thread,
+    io, time::Duration, thread, sync::mpsc,
 };
 use termion::event::Key;
 use termion::input::TermRead;

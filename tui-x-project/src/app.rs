@@ -2,6 +2,7 @@
 use anyhow::Result;
 use tui::{backend::{TermionBackend, Backend}, Frame, widgets::{Block, BorderType, Borders}};
 use crate::inputs::EventHost;
+use crate::vc::VCManager;
 use tui::Terminal;
 use termion::screen::AlternateScreen;
 use termion::input::MouseTerminal;
@@ -11,10 +12,11 @@ use std::io::{self, Stdout};
 type ATerminal = TermionBackend<AlternateScreen<MouseTerminal<RawTerminal<Stdout>>>>;
 pub struct App {
     pub terminal: Terminal<ATerminal>,
+    pub vc: VCManager,
 }
 
 impl App {
-    pub fn new() -> Result<App> {
+    pub fn new(vc: VCManager) -> Result<App> {
         let stdout = io::stdout().into_raw_mode()?;
         let stdout = MouseTerminal::from(stdout);
         let stdout = AlternateScreen::from(stdout);
@@ -24,7 +26,8 @@ impl App {
         terminal.clear()?;
 
         Ok(App { 
-            terminal
+            terminal,
+            vc,
         })
     }
 

@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.56"
 humantime = "2.1.0"
-humantime-serde = "1.1.1"
 reqwest = { version = "0.11.10", features = ["json"] }
 serde = { version = "1.0.136", features = ["derive"] }
 structopt = "0.3.26"

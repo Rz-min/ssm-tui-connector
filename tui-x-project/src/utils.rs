@@ -1,8 +1,9 @@
 //
+use serde::{Deserialize, Serialize};
 use structopt::clap::arg_enum;
 
 arg_enum! {
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, Serialize, Deserialize)]
     pub enum FiatCurrency {
         // check https://coinmarketcap.com/api/documentation/v1/#section/Standards-and-Conventions
         USD,
@@ -100,7 +101,3 @@ arg_enum! {
         VND,
     }
 }
-
-
-
-

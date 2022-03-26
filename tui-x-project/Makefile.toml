@@ -1,0 +1,4 @@
+
+[task.test]
+command = "cargo"
+args = ["run"]

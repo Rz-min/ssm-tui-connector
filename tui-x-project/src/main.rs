@@ -1,65 +1,62 @@
 //
-mod ui;
-mod inputs;
 mod app;
-mod vc;
+mod inputs;
+mod ui;
 mod utils;
+mod vc;
 
-use self::vc::VCManager;
 use self::app::App;
+use self::ui::Draw;
 use self::inputs::{EventHost, Signal};
 use self::utils::FiatCurrency;
+use self::vc::VCManager;
 
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
+use std::sync::{atomic::AtomicBool, Arc};
+use std::time::Duration;
 use structopt::{clap, StructOpt};
-use url::Url;
-use std::sync::{Arc, atomic::AtomicBool};
 use termion::event::Key;
+use url::Url;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, StructOpt, Serialize, Deserialize)]
 #[structopt(name = "tui x project")]
 #[structopt(setting(clap::AppSettings::ColoredHelp))]
 struct Opt {
     #[structopt(short = "u", long = "url")]
-    url: Url,
+    url: String,
     #[structopt(short = "c", long = "currency", possible_values(&FiatCurrency::variants()))]
     currency: FiatCurrency,
+    #[structopt(short = "t", long = "update frequency")]
+    update: Option<String>,
 }
-
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let opt = Opt::from_args();
 
     let mut running_flag = Arc::new(AtomicBool::new(false));
     let mut running_clone = running_flag.clone();
 
-    let mut handler = EventHost::new();
-    
+    let mut handler = EventHost::new(&opt.update);
     let vc = VCManager::new(running_clone);
-
     let mut app = App::new(vc).unwrap();
 
+    let mut draw = Draw::new(app).unwrap();
 
     loop {
-        match app.draw() {
-            Ok(v) => {
-                match handler.on_event() {
-                    Signal::Finish => {
-                        match handler.get_input() {
-                            Key::Char('q') => {
-                                break;
-                            }
-                            _ => continue,
-                        }
+        match draw.draw(&mut handler) {
+            Ok(v) => match handler.on_event() {
+                Signal::Finish => match handler.get_input() {
+                    Key::Char('q') => {
+                        break;
                     }
-                    Signal::Other => continue,
-                }
-            }
-            Err(e) => {
-
-            }
+                    _ => continue,
+                },
+                Signal::Other => continue,
+            },
+            Err(e) => {}
         }
-        
     }
 
     handler.input_task.join().unwrap();

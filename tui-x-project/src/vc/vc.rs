@@ -1,10 +1,11 @@
 //
 use anyhow::Result;
-use std::{sync::{Arc, atomic::AtomicBool}, collections::BTreeMap};
+use std::{
+    collections::BTreeMap,
+    sync::{atomic::AtomicBool, Arc},
+};
 
-pub struct Currency {
-
-}
+pub struct Currency {}
 
 pub struct VCManager {
     running_flag: Arc<AtomicBool>,
@@ -13,9 +14,6 @@ pub struct VCManager {
 
 impl VCManager {
     pub fn new(running_flag: Arc<AtomicBool>) -> VCManager {
-
-        
-
         VCManager {
             running_flag,
             crypto_store: BTreeMap::new(),

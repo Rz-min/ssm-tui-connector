@@ -1,5 +1,6 @@
 //
 use crate::app::App;
+use crate::inputs::EventHost;
 use super::MenuItems;
 use tui::{Frame, backend::Backend};
 use tui::layout::{Layout, Constraint, Direction};
@@ -7,7 +8,7 @@ use tui::style::{Style, Color, Modifier};
 use tui::text::{Span, Spans};
 use tui::widgets::{Block, Tabs, Borders};
 
-pub fn draw_home<B>(f: &mut Frame<B>, )
+pub fn draw_home<B>(f: &mut Frame<B>, app: &mut App, handler: &mut EventHost)
 where
     B: Backend,
 {
@@ -39,8 +40,18 @@ where
         }
     ).collect();
 
+    match handler.get_input() {
+        termion::event::Key::Left => {
+            app.select_menu = MenuItems::BlockChain
+        },
+        termion::event::Key::Right => {
+
+        },
+        _ => {},
+    }
+
     let tabs = Tabs::new(menu)
-        .select(MenuItems::Home.into())
+        .select(app.get_select_menu().into())
         .block(Block::default().title("Menu").borders(Borders::ALL))
         .style(Style::default().fg(Color::Green))
         .highlight_style(Style::default().fg(Color::Yellow))

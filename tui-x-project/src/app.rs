@@ -16,4 +16,8 @@ impl App {
             select_menu: MenuItems::Home,
         })
     }
+
+    pub fn get_select_menu(&self) -> MenuItems {
+        self.select_menu
+    }
 }

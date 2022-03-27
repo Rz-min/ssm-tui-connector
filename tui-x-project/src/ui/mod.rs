@@ -1,8 +1,17 @@
 //
 mod ui;
 pub mod home;
+pub mod cryptocurrency;
+pub mod stocks;
+pub mod utils;
+pub mod news;
+pub mod blockchain;
 
 pub use self::home::draw_home;
+pub use self::cryptocurrency::draw_crypto;
+pub use self::stocks::draw_stocks;
+pub use self::news::draw_news;
+pub use self::blockchain::draw_blockchain;
 pub use self::ui::Draw;
 use std::convert::From;
 use strum_macros::{EnumCount, EnumIter, EnumString, Display};

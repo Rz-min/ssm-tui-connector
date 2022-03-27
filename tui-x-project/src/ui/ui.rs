@@ -14,7 +14,7 @@ use tui::{
     Frame,
 };
 
-use super::{draw_home, MenuItems};
+use super::{draw_home, MenuItems, draw_crypto, draw_blockchain, draw_news, draw_stocks};
 
 type ATerminal = TermionBackend<AlternateScreen<MouseTerminal<RawTerminal<Stdout>>>>;
 pub struct Draw {
@@ -38,21 +38,56 @@ impl Draw {
     pub fn draw(&mut self, handler: &mut EventHost) -> Result<()> {
         self.terminal.draw(|mut f| {
             
+            match handler.get_input() {
+                termion::event::Key::Char('h') => {
+                    self.app.select_menu = MenuItems::Home;
+                },
+                termion::event::Key::Char('c') => {
+                    self.app.select_menu = MenuItems::Cryptocurrency;
+                }
+                termion::event::Key::Char('s') => {
+                    self.app.select_menu = MenuItems::Stocks;
+                }
+                termion::event::Key::Char('n') => {
+                    self.app.select_menu = MenuItems::News;
+                }
+                termion::event::Key::Char('b') => {
+                    self.app.select_menu = MenuItems::BlockChain;
+                }
+                _ => {
+                    self.app.select_menu;
+                },
+            }
+
             match self.app.select_menu {
                 MenuItems::Home => {
                     draw_home(f, &mut self.app, handler);
                 },
-                MenuItems::Cryptocurrency => todo!(),
-                MenuItems::Stocks => todo!(),
-                MenuItems::News => todo!(),
-                MenuItems::BlockChain => todo!(),
+                MenuItems::Cryptocurrency => {
+                    draw_crypto(f, &mut self.app, handler);
+                },
+                MenuItems::Stocks => {
+                    draw_stocks(f, &mut self.app, handler);
+                },
+                MenuItems::News => {
+                    draw_news(f, &mut self.app, handler);
+                },
+                MenuItems::BlockChain => {
+                    draw_blockchain(f, &mut self.app, handler);
+                },
             }
+
+            
+
             // match handler.get_input() {
             //     termion::event::Key::Char('h') => {
-            //         draw_home(f, &self.app);
+            //         self.app.select_menu = MenuItems::Home;
             //     },
+            //     termion::event::Key::Char('c') => {
+            //         self.app.select_menu = MenuItems::Cryptocurrency;
+            //     }
             //     termion::event::Key::Left => {
-            //         self.app.select_menu = MenuItems::BlockChain;
+                    
             //     },
             //     termion::event::Key::Right => {
 

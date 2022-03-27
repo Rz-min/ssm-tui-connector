@@ -1,5 +1,5 @@
 //
-use std::{io, sync::mpsc, thread, time::{Duration, Instant}};
+use std::{io::{self, Sink}, sync::mpsc, thread, time::{Duration, Instant}};
 use humantime::parse_duration;
 use termion::event::Key;
 use termion::input::TermRead;
@@ -59,7 +59,6 @@ impl EventHost {
             let stdin = io::stdin();
 
             for event in stdin.keys() {
-                println!("event: {:?}", &event);
                 match event {
                     Ok(key) => {
                         if event_tx.send(Event::Input(key)).is_err() {
@@ -98,7 +97,7 @@ impl EventHost {
             _tx: tx,
             input_task,
             tick_task,
-            last_input: Some(Key::Char('q')),
+            last_input: Some(Key::Char('h')),
         }
     }
 
@@ -120,6 +119,26 @@ impl EventHost {
                     println!("get recv: {:?}", &key);
                     self.last_input = Some(Key::Char('q'));
                     Signal::Finish
+                }
+                Key::Char('h') => {
+                    self.last_input = Some(Key::Char('h'));
+                    Signal::Other
+                }
+                Key::Char('c') => {
+                    self.last_input = Some(Key::Char('c'));
+                    Signal::Other
+                }
+                Key::Char('s') => {
+                    self.last_input = Some(Key::Char('s'));
+                    Signal::Other
+                }
+                Key::Char('n') => {
+                    self.last_input = Some(Key::Char('n'));
+                    Signal::Other
+                }
+                Key::Char('b') => {
+                    self.last_input = Some(Key::Char('b'));
+                    Signal::Other
                 }
                 _ => {
                     self.last_input = None;

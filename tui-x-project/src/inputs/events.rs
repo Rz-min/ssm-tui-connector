@@ -1,5 +1,5 @@
 //
-use std::{io::{self, Sink}, sync::mpsc, thread, time::{Duration, Instant}};
+use std::{io, sync::mpsc, thread, time::{Duration, Instant}};
 use humantime::parse_duration;
 use termion::event::Key;
 use termion::input::TermRead;
@@ -140,6 +140,35 @@ impl EventHost {
                     self.last_input = Some(Key::Char('b'));
                     Signal::Other
                 }
+                Key::Left => {
+                    self.last_input = Some(Key::Left);
+                    Signal::Other
+                },
+                Key::Right => {
+                    self.last_input = Some(Key::Right);
+                    Signal::Other
+                },
+                Key::Up => {
+                    self.last_input = Some(Key::Up);
+                    Signal::Other
+                },
+                Key::Down => {
+                    self.last_input = Some(Key::Down);
+                    Signal::Other
+                },
+                Key::Backspace => todo!(),
+                Key::Home => todo!(),
+                Key::End => todo!(),
+                Key::PageUp => todo!(),
+                Key::PageDown => todo!(),
+                Key::BackTab => todo!(),
+                Key::Delete => todo!(),
+                Key::Insert => todo!(),
+                Key::F(_) => todo!(),
+                Key::Alt(_) => todo!(),
+                Key::Ctrl(_) => todo!(),
+                Key::Null => todo!(),
+                Key::Esc => todo!(),
                 _ => {
                     self.last_input = None;
                     Signal::Other

@@ -14,10 +14,8 @@ use self::vc::VCManager;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::sync::{atomic::AtomicBool, Arc};
-use std::time::Duration;
 use structopt::{clap, StructOpt};
 use termion::event::Key;
-use url::Url;
 
 #[derive(Debug, StructOpt, Serialize, Deserialize)]
 #[structopt(name = "tui x project")]
@@ -40,13 +38,13 @@ async fn main() -> Result<()> {
 
     let mut handler = EventHost::new(&opt.update);
     let vc = VCManager::new(running_clone);
-    let mut app = App::new(vc).unwrap();
+    let app = App::new(vc).unwrap();
 
     let mut draw = Draw::new(app).unwrap();
 
     loop {
         match draw.draw(&mut handler) {
-            Ok(v) => match handler.on_event() {
+            Ok(_) => match handler.on_event() {
                 Signal::Finish => match handler.get_input() {
                     Key::Char('q') => {
                         break;
@@ -55,7 +53,10 @@ async fn main() -> Result<()> {
                 },
                 Signal::Other => continue,
             },
-            Err(e) => {}
+            Err(e) => {
+                println!("Couldn't draw: {}", e);
+                break;
+            }
         }
     }
 

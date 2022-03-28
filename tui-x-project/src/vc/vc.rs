@@ -5,11 +5,14 @@ use std::{
     sync::{atomic::AtomicBool, Arc},
 };
 
-pub struct Currency {}
+pub struct Currency {
+    pub name: String,
+    pub price: String,
+}
 
 pub struct VCManager {
     running_flag: Arc<AtomicBool>,
-    crypto_store: BTreeMap<String, Currency>,
+    crypto_store: BTreeMap<String, Vec<Currency>>,
 }
 
 impl VCManager {
@@ -18,5 +21,11 @@ impl VCManager {
             running_flag,
             crypto_store: BTreeMap::new(),
         }
+    }
+
+    pub fn get_crypto_ranking(&self) -> Result<Vec<Vec<String>>> {
+        let data = vec![];
+        
+        Ok(data)
     }
 }

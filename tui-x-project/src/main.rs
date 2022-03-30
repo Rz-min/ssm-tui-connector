@@ -27,17 +27,18 @@ struct Opt {
     currency: FiatCurrency,
     #[structopt(short = "t", long = "update frequency")]
     update: Option<String>,
+    #[structopt(short = "n", long = "update_cycle")]
+    crypto_update_cycle: Option<u64>,
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let opt = Opt::from_args();
 
-    let mut running_flag = Arc::new(AtomicBool::new(false));
-    let mut running_clone = running_flag.clone();
+    let mut running_flag = Arc::new(AtomicBool::new(true));
 
     let mut handler = EventHost::new(&opt.update);
-    let vc = VCManager::new(running_clone);
+    let vc = VCManager::new(Arc::clone(&running_flag), opt.crypto_update_cycle.unwrap_or(10));
     let app = App::new(vc).unwrap();
 
     let mut draw = Draw::new(app).unwrap();

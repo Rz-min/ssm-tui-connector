@@ -1,4 +1,6 @@
 .PHONY: test
 
 test:
-	cargo run -- -u https://hogehoge -c USD
+	cargo run -- -u https://pro-api.coinmarketcap.com \
+	-h hogehoge \
+	-c USD

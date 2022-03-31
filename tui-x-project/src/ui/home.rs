@@ -1,12 +1,12 @@
 //
+use super::utils::menu_widgets;
 use crate::app::App;
 use crate::inputs::EventHost;
-use super::utils::menu_widgets;
-use tui::{Frame, backend::Backend};
-use tui::layout::{Layout, Constraint, Direction, Alignment};
-use tui::style::{Style, Color};
+use tui::layout::{Alignment, Constraint, Direction, Layout};
+use tui::style::{Color, Style};
 use tui::text::{Span, Spans};
-use tui::widgets::{Block, Borders, Paragraph, BorderType};
+use tui::widgets::{Block, BorderType, Borders, Paragraph};
+use tui::{backend::Backend, Frame};
 
 pub fn draw_home<B>(f: &mut Frame<B>, app: &mut App, _handler: &mut EventHost)
 where

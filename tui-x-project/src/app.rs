@@ -1,9 +1,9 @@
 //
+use super::ui::MenuItems;
 use crate::vc::VCManager;
-use super::ui::{MenuItems};
 use anyhow::Result;
 
-use tui::widgets::{TableState};
+use tui::widgets::TableState;
 
 pub struct App {
     pub vc: VCManager,
@@ -13,7 +13,6 @@ pub struct App {
 
 impl App {
     pub fn new(vc: VCManager) -> Result<App> {
-
         Ok(App {
             vc,
             select_menu: MenuItems::Home,

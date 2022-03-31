@@ -1,12 +1,12 @@
 //
+use super::utils::menu_widgets;
 use crate::app::App;
 use crate::inputs::EventHost;
-use super::utils::menu_widgets;
-use tui::{Frame, backend::Backend};
-use tui::layout::{Layout, Constraint, Direction, Alignment};
-use tui::widgets::{Block, Paragraph, Borders, BorderType};
-use tui::text::{Span, Spans};
+use tui::layout::{Alignment, Constraint, Direction, Layout};
 use tui::style::{Color, Style};
+use tui::text::{Span, Spans};
+use tui::widgets::{Block, BorderType, Borders, Paragraph};
+use tui::{backend::Backend, Frame};
 
 pub fn draw_news<B>(f: &mut Frame<B>, app: &mut App, _handler: &mut EventHost)
 where
@@ -37,11 +37,12 @@ where
         Spans::from(vec![Span::raw("")]),
     ])
     .alignment(Alignment::Center)
-    .block(Block::default()
-        .borders(Borders::ALL)
-        .style(Style::default().fg(Color::Green))
-        .title("Home")
-        .border_type(BorderType::Plain)
+    .block(
+        Block::default()
+            .borders(Borders::ALL)
+            .style(Style::default().fg(Color::Green))
+            .title("Home")
+            .border_type(BorderType::Plain),
     );
 
     f.render_widget(middle, chunks[2]);

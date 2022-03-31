@@ -1,26 +1,28 @@
 //
-use tui::style::{Style, Color, Modifier};
+use tui::style::{Color, Modifier, Style};
 use tui::text::{Span, Spans};
-use tui::widgets::{Tabs, Block, Borders};
+use tui::widgets::{Block, Borders, Tabs};
 
 use super::MenuItems;
 
 pub fn menu_widgets<'a>(position: MenuItems) -> Tabs<'a> {
     let menu_items = vec!["Home", "Cryptocurrency", "Stocks", "News", "BlockChain"];
 
-    let menu = menu_items.iter()
+    let menu = menu_items
+        .iter()
         .map(|t| {
             let (first, rest) = t.split_at(1);
             Spans::from(vec![
                 Span::styled(
-                    first, Style::default()
+                    first,
+                    Style::default()
                         .fg(Color::White)
                         .add_modifier(Modifier::UNDERLINED),
                 ),
                 Span::styled(rest, Style::default().fg(Color::White)),
             ])
-        }
-    ).collect();
+        })
+        .collect();
 
     let tabs = Tabs::new(menu)
         .select(position.into())

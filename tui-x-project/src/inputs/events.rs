@@ -1,6 +1,11 @@
 //
-use std::{io, sync::mpsc, thread, time::{Duration, Instant}};
 use humantime::parse_duration;
+use std::{
+    io,
+    sync::mpsc,
+    thread,
+    time::{Duration, Instant},
+};
 use termion::event::Key;
 use termion::input::TermRead;
 
@@ -12,7 +17,10 @@ pub struct EventConfig {
 
 impl EventConfig {
     pub fn new(tick_rate: Duration) -> EventConfig {
-        EventConfig { exit_key: Key::Ctrl('c'), tick_rate }
+        EventConfig {
+            exit_key: Key::Ctrl('c'),
+            tick_rate,
+        }
     }
 }
 
@@ -45,7 +53,6 @@ pub struct EventHost {
 
 impl EventHost {
     pub fn new(tick_rate: &Option<String>) -> EventHost {
-
         let config = match tick_rate {
             Some(v) => EventConfig::new(parse_duration(&v).unwrap()),
             None => EventConfig::default(),
@@ -89,7 +96,6 @@ impl EventHost {
                     }
                 }
             }
-
         });
 
         EventHost {
@@ -143,19 +149,19 @@ impl EventHost {
                 Key::Left => {
                     self.last_input = Some(Key::Left);
                     Signal::Other
-                },
+                }
                 Key::Right => {
                     self.last_input = Some(Key::Right);
                     Signal::Other
-                },
+                }
                 Key::Up => {
                     self.last_input = Some(Key::Up);
                     Signal::Other
-                },
+                }
                 Key::Down => {
                     self.last_input = Some(Key::Down);
                     Signal::Other
-                },
+                }
                 Key::Backspace => todo!(),
                 Key::Home => todo!(),
                 Key::End => todo!(),

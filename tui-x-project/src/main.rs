@@ -19,6 +19,7 @@ use std::sync::{
 };
 use structopt::{clap, StructOpt};
 use termion::event::Key;
+use tokio::sync::OnceCell;
 
 #[derive(Debug, StructOpt, Serialize, Deserialize)]
 #[structopt(name = "tui x project")]
@@ -36,17 +37,22 @@ struct Opt {
     crypto_update_cycle: Option<u64>,
 }
 
+static URL: OnceCell<String> = OnceCell::const_new();
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let opt = Opt::from_args();
+
+    let api_key = URL.get_or_init(|| async { opt.api_key }).await;
 
     let running_flag = Arc::new(AtomicBool::new(true));
 
     let mut handler = EventHost::new(&opt.update);
     let vc = VCManager::new(
         Arc::clone(&running_flag),
-        opt.crypto_update_cycle.unwrap_or(10),
-        &opt.api_key,
+        opt.crypto_update_cycle.unwrap_or(60),
+        api_key,
+        opt.url,
     );
 
     let app = App::new(vc).unwrap();
@@ -60,6 +66,8 @@ async fn main() -> Result<()> {
             Ok(_) => match handler.on_event() {
                 Signal::Finish => match handler.get_input() {
                     Key::Char('q') => {
+                        println!("change atomic bool false");
+
                         running_flag.store(false, Ordering::Relaxed);
                         break;
                     }
@@ -73,6 +81,11 @@ async fn main() -> Result<()> {
             }
         }
     }
+
+    let (vc_task,) = tokio::join!(draw.app.vc.task);
+    vc_task?;
+
+    println!("join vc task");
 
     let (task,) = tokio::join!(crypto_subscribe);
     task?;

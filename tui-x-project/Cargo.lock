@@ -1018,8 +1018,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "humantime",
+ "once_cell",
  "reqwest",
  "serde",
+ "serde_json",
  "structopt",
  "strum",
  "strum_macros",

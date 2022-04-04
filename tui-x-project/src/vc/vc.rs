@@ -1,5 +1,5 @@
 //
-use super::CryptoCurrencyModel;
+use super::{CryptoCurrencyModel, make};
 use anyhow::Result;
 use reqwest::header::{self, HeaderValue, ACCEPT};
 use reqwest::{Client, StatusCode};
@@ -25,9 +25,10 @@ pub struct Currency {
 }
 
 pub struct VCManager {
+    pub running_flag: Arc<AtomicBool>,
     pub task: tokio::task::JoinHandle<()>,
     crypto_store: BTreeMap<String, Vec<CryptoCurrencyModel>>,
-    rx: Receiver<u64>,
+    rx: Receiver<Vec<CryptoCurrencyModel>>,
 }
 
 impl VCManager {
@@ -39,8 +40,9 @@ impl VCManager {
     ) -> VCManager {
         let (tx, rx) = mpsc::channel(1);
 
+        let clone_flag = Arc::clone(&running_flag);
+
         let task = tokio::spawn(async move {
-            let clone_flag = Arc::clone(&running_flag);
 
             let mut url = url.clone();
             let api_key = api_key.clone();
@@ -82,9 +84,13 @@ impl VCManager {
                     StatusCode::OK => {
                         match response.json::<Currency>().await {
                             Ok(res) => {
-                                res.data.iter().for_each(|i| {
-                                    println!("Success! {:?}", i);
-                                })
+                                
+                                let crypto = make(res.data);
+                                
+                                if let Err(_) = tx.send(crypto).await {
+                                    println!("send error in crypto(VCManager)");
+                                    break 'outer;
+                                }
                             }
                             Err(e) => {
                                 panic!("Couldn't convert json: {:?}", &e);
@@ -99,31 +105,42 @@ impl VCManager {
                     }
                 }
 
-                if let Err(_) = tx.send(1).await {
-                    println!("send error in crypto(VCManager)");
-                    break 'outer;
-                }
-
                 sleep(Duration::from_secs(crypto_update)).await;
             }
         });
 
         VCManager {
+            running_flag,
             task,
             crypto_store: BTreeMap::new(),
             rx,
         }
     }
 
+    pub async fn update_crypto_store(&mut self) -> Result<()> {
+
+        loop {
+            if !self.running_flag.load(Ordering::Relaxed) {
+                break;
+            }
+
+            match self.rx.recv().await {
+                Some(data) => {
+                    //store をアップデートして他のmpscのチャネルに最新の値を送信する。
+                }
+                None => {
+                    println!("connection refuse");
+                    break;
+                }
+            }
+        }
+
+        Err(anyhow::anyhow!("connection refuse"))
+    }
+
     pub fn get_crypto_ranking(&self) -> Result<Vec<Vec<String>>> {
         let data = vec![];
 
         Ok(data)
-    }
-
-    pub fn update_crypto_store(&mut self) {
-        while let Ok(message) = self.rx.try_recv() {
-            print!("message: {:?}", message);
-        }
     }
 }

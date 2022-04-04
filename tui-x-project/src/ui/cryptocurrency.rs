@@ -29,9 +29,10 @@ where
     f.render_widget(menu, chunks[0]);
 
     let _crypto_table_state = app.get_crypto_table_state();
-    let crypto_data = app.vc.get_crypto_ranking().unwrap(); //vector描画するvectorを貰う。
+    let _crypto_data = app.get_crypto_ranking(); //vector描画するvectorを貰う。
 
-    let table = get_table(crypto_data);
+    let v: Vec<Vec<std::string::String>> = vec![];
+    let table = get_table(v);
 
     f.render_widget(table, chunks[2]);
 }

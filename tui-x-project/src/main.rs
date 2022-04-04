@@ -46,20 +46,27 @@ async fn main() -> Result<()> {
     let api_key = URL.get_or_init(|| async { opt.api_key }).await;
 
     let running_flag = Arc::new(AtomicBool::new(true));
-
-    let mut handler = EventHost::new(&opt.update);
-    let vc = VCManager::new(
+    
+    let mut vc = VCManager::new(
         Arc::clone(&running_flag),
         opt.crypto_update_cycle.unwrap_or(60),
         api_key,
         opt.url,
     );
 
-    let app = App::new(vc).unwrap();
+    let crypto_handler = tokio::spawn(async move {
 
-    let mut draw = Draw::new(app).unwrap();
+        if let Err(e) =  vc.update_crypto_store().await {
+            println!("{:?}", e);
+        }
 
-    let crypto_subscribe = tokio::spawn(async move {});
+        tokio::join!(vc.task)
+    });
+
+    let mut draw = Draw::new(App::new(Arc::clone(&running_flag)
+    ).unwrap()).unwrap();
+
+    let mut handler = EventHost::new(&opt.update);
 
     loop {
         match draw.draw(&mut handler) {
@@ -82,13 +89,11 @@ async fn main() -> Result<()> {
         }
     }
 
-    let (vc_task,) = tokio::join!(draw.app.vc.task);
-    vc_task?;
 
     println!("join vc task");
 
-    let (task,) = tokio::join!(crypto_subscribe);
-    task?;
+    let (crypto_handler,) = tokio::join!(crypto_handler);
+    crypto_handler?.0?;
 
     handler.input_task.join().unwrap();
 

@@ -1,6 +1,6 @@
 //
 use super::{CryptoCurrencyModel, make};
-use anyhow::Result;
+use anyhow::{Result, bail};
 use reqwest::header::{self, HeaderValue, ACCEPT};
 use reqwest::{Client, StatusCode};
 use serde::{Serialize, Deserialize};
@@ -12,7 +12,7 @@ use std::{
     },
 };
 use tokio::{
-    sync::mpsc::{self, Receiver},
+    sync::mpsc::{self, Receiver, Sender},
     time::{sleep, Duration},
 };
 use std::collections::HashMap;
@@ -29,6 +29,7 @@ pub struct VCManager {
     pub task: tokio::task::JoinHandle<()>,
     crypto_store: BTreeMap<String, Vec<CryptoCurrencyModel>>,
     rx: Receiver<Vec<CryptoCurrencyModel>>,
+    crypto_data_send_tx: Sender<i32>,
 }
 
 impl VCManager {
@@ -37,6 +38,7 @@ impl VCManager {
         crypto_update: u64,
         api_key: &'static str,
         url: String,
+        crypto_data_send_tx: Sender<i32>,
     ) -> VCManager {
         let (tx, rx) = mpsc::channel(1);
 
@@ -114,6 +116,7 @@ impl VCManager {
             task,
             crypto_store: BTreeMap::new(),
             rx,
+            crypto_data_send_tx,
         }
     }
 
@@ -126,7 +129,9 @@ impl VCManager {
 
             match self.rx.recv().await {
                 Some(data) => {
-                    //store をアップデートして他のmpscのチャネルに最新の値を送信する。
+                    self.update(data).await.expect("failed update cryptocurrency");
+
+                    self.send_crypto_ranking().await.expect("failed send crypto data to other thread");
                 }
                 None => {
                     println!("connection refuse");
@@ -138,9 +143,22 @@ impl VCManager {
         Err(anyhow::anyhow!("connection refuse"))
     }
 
-    pub fn get_crypto_ranking(&self) -> Result<Vec<Vec<String>>> {
-        let data = vec![];
+    async fn update(&mut self, data: Vec<CryptoCurrencyModel>) -> Result<()> {
 
-        Ok(data)
+        data.into_iter().for_each(|crypto| {
+            if let Some(_v) = self.crypto_store.get_mut(&crypto.symbol) {
+
+            }
+        });
+
+        Ok(())
+    }
+
+    pub async fn send_crypto_ranking(&self) -> Result<()> {
+        if let Err(e) = self.crypto_data_send_tx.send(1).await {
+            bail!("failed send: {:?}", &e);
+        }
+
+        Ok(())
     }
 }

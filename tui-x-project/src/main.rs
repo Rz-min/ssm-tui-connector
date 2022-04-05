@@ -19,7 +19,7 @@ use std::sync::{
 };
 use structopt::{clap, StructOpt};
 use termion::event::Key;
-use tokio::sync::OnceCell;
+use tokio::sync::{mpsc, OnceCell};
 
 #[derive(Debug, StructOpt, Serialize, Deserialize)]
 #[structopt(name = "tui x project")]
@@ -46,12 +46,15 @@ async fn main() -> Result<()> {
     let api_key = URL.get_or_init(|| async { opt.api_key }).await;
 
     let running_flag = Arc::new(AtomicBool::new(true));
+
+    let (crypto_tx, crypto_rx) = mpsc::channel(1);
     
     let mut vc = VCManager::new(
         Arc::clone(&running_flag),
         opt.crypto_update_cycle.unwrap_or(60),
         api_key,
         opt.url,
+        crypto_tx,
     );
 
     let crypto_handler = tokio::spawn(async move {
@@ -63,7 +66,9 @@ async fn main() -> Result<()> {
         tokio::join!(vc.task)
     });
 
-    let mut draw = Draw::new(App::new(Arc::clone(&running_flag)
+    let mut draw = Draw::new(App::new(
+        Arc::clone(&running_flag),
+        crypto_rx,
     ).unwrap()).unwrap();
 
     let mut handler = EventHost::new(&opt.update);

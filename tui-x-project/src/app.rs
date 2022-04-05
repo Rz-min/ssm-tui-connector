@@ -1,6 +1,7 @@
 //
 use super::ui::MenuItems;
 
+use tokio::sync::{mpsc::Receiver};
 use std::{sync::{Arc, atomic::{AtomicBool, Ordering}}};
 use anyhow::Result;
 use tui::widgets::TableState;
@@ -9,11 +10,15 @@ use tui::widgets::TableState;
 pub struct App {
     pub select_menu: MenuItems,
     pub update_crypto_store_task: tokio::task::JoinHandle<()>,
+    pub crypto_receive: Receiver<i32>,
     pub crypto_table_state: TableState,
 }
 
 impl App {
-    pub fn new(running_flag: Arc<AtomicBool>) -> Result<App> {
+    pub fn new(
+        running_flag: Arc<AtomicBool>,
+        crypto_receive: Receiver<i32>,
+    ) -> Result<App> {
 
         let update_crypto_store_task = tokio::spawn(async move {
             let clone_flag = Arc::clone(&running_flag);
@@ -31,6 +36,7 @@ impl App {
         Ok(App {
             select_menu: MenuItems::Home,
             update_crypto_store_task,
+            crypto_receive,
             crypto_table_state: TableState::default(),
         })
     }
@@ -40,7 +46,7 @@ impl App {
     }
 
     pub fn get_crypto_ranking(&self) {
-        
+
     }
 
     pub fn get_crypto_table_state(&self) -> TableState {

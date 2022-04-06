@@ -8,6 +8,22 @@ use tui::text::{Span, Spans};
 use tui::widgets::{Block, Borders, Cell, Row, Table};
 use tui::{backend::Backend, Frame};
 
+#[derive(Debug, Clone)]
+pub struct CryptoPrint {
+    pub rnk: String,
+}
+
+impl CryptoPrint {
+    pub fn new(
+        rnk: String,
+    ) -> CryptoPrint {
+        CryptoPrint { 
+            rnk,
+        }
+    }
+    
+}
+
 pub fn draw_crypto<B>(f: &mut Frame<B>, app: &mut App, _handler: &mut EventHost)
 where
     B: Backend,

@@ -8,7 +8,7 @@ mod ui;
 pub mod utils;
 
 pub use self::blockchain::draw_blockchain;
-pub use self::cryptocurrency::draw_crypto;
+pub use self::cryptocurrency::{CryptoPrint, draw_crypto};
 pub use self::home::draw_home;
 pub use self::news::draw_news;
 pub use self::stocks::draw_stocks;

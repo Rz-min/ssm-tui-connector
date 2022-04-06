@@ -1,5 +1,6 @@
 //
 use super::{CryptoCurrencyModel, make};
+use crate::ui::CryptoPrint;
 use anyhow::{Result, bail};
 use reqwest::header::{self, HeaderValue, ACCEPT};
 use reqwest::{Client, StatusCode};
@@ -13,7 +14,7 @@ use std::{
 };
 use tokio::{
     sync::mpsc::{self, Receiver, Sender},
-    time::{sleep, Duration},
+    time::{sleep, timeout, Duration},
 };
 use std::collections::HashMap;
 use serde_json::Value;
@@ -27,7 +28,7 @@ pub struct Currency {
 pub struct VCManager {
     pub running_flag: Arc<AtomicBool>,
     pub task: tokio::task::JoinHandle<()>,
-    crypto_store: BTreeMap<String, Vec<CryptoCurrencyModel>>,
+    crypto_store: BTreeMap<String, CryptoPrint>,
     rx: Receiver<Vec<CryptoCurrencyModel>>,
     crypto_data_send_tx: Sender<i32>,
 }
@@ -76,11 +77,14 @@ impl VCManager {
                 }
 
                 let client = client.clone();
-                let response = client
+                let http = client
                     .get(url.clone())
-                    .send()
-                    .await
-                    .expect("failed get request");
+                    .send();
+
+                let response = match timeout(Duration::from_secs(5), http).await {
+                    Ok(v) => v.unwrap(),
+                    Err(_) => continue,
+                };
 
                 match response.status() {
                     StatusCode::OK => {
@@ -127,7 +131,13 @@ impl VCManager {
                 break;
             }
 
-            match self.rx.recv().await {
+            let receive = 
+                match timeout(Duration::from_secs(5), self.rx.recv()).await {
+                    Ok(v) => v,
+                    Err(_) => continue,
+            };
+
+            match receive {
                 Some(data) => {
                     self.update(data).await.expect("failed update cryptocurrency");
 
@@ -145,9 +155,22 @@ impl VCManager {
 
     async fn update(&mut self, data: Vec<CryptoCurrencyModel>) -> Result<()> {
 
-        data.into_iter().for_each(|crypto| {
-            if let Some(_v) = self.crypto_store.get_mut(&crypto.symbol) {
+        let mut data = data.clone();
+        data.sort_by(|a, b| a.cmc_rank.cmp(&b.cmc_rank));
 
+        data.into_iter().for_each(|crypto| {
+            match self.crypto_store.get_mut(&crypto.cmc_rank.to_string()) {
+                Some(ui_crypto) => {
+                    ui_crypto.rnk = crypto.cmc_rank.to_string();
+                }
+                None => {
+                    self.crypto_store.insert(
+                        crypto.cmc_rank.to_string(),
+                        CryptoPrint::new(
+                        crypto.cmc_rank.to_string(),
+                        )
+                    );
+                }
             }
         });
 

@@ -30,7 +30,7 @@ pub struct VCManager {
     pub task: tokio::task::JoinHandle<()>,
     crypto_store: BTreeMap<String, CryptoPrint>,
     rx: Receiver<Vec<CryptoCurrencyModel>>,
-    crypto_data_send_tx: Sender<i32>,
+    crypto_data_send_tx: Sender<Vec<CryptoPrint>>,
 }
 
 impl VCManager {
@@ -39,7 +39,7 @@ impl VCManager {
         crypto_update: u64,
         api_key: &'static str,
         url: String,
-        crypto_data_send_tx: Sender<i32>,
+        crypto_data_send_tx: Sender<Vec<CryptoPrint>>,
     ) -> VCManager {
         let (tx, rx) = mpsc::channel(1);
 
@@ -178,7 +178,9 @@ impl VCManager {
     }
 
     pub async fn send_crypto_ranking(&self) -> Result<()> {
-        if let Err(e) = self.crypto_data_send_tx.send(1).await {
+        let send_data: Vec<CryptoPrint> = self.crypto_store.values().cloned().collect();
+
+        if let Err(e) = self.crypto_data_send_tx.send(send_data).await {
             bail!("failed send: {:?}", &e);
         }
 

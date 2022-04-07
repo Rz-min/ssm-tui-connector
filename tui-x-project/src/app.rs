@@ -1,5 +1,6 @@
 //
 use super::ui::MenuItems;
+use crate::ui::CryptoPrint;
 
 use tokio::sync::{mpsc::Receiver};
 use std::{sync::{Arc, atomic::{AtomicBool, Ordering}}};
@@ -10,14 +11,15 @@ use tui::widgets::TableState;
 pub struct App {
     pub select_menu: MenuItems,
     pub update_crypto_store_task: tokio::task::JoinHandle<()>,
-    pub crypto_receive: Receiver<i32>,
+    pub crypto_rx: Receiver<Vec<CryptoPrint>>,
+    pub crypto_store: Vec<CryptoPrint>,
     pub crypto_table_state: TableState,
 }
 
 impl App {
     pub fn new(
         running_flag: Arc<AtomicBool>,
-        crypto_receive: Receiver<i32>,
+        crypto_receive: Receiver<Vec<CryptoPrint>>,
     ) -> Result<App> {
 
         let update_crypto_store_task = tokio::spawn(async move {
@@ -29,14 +31,14 @@ impl App {
                     break 'outer;
                 }
 
-
             }
         });
 
         Ok(App {
             select_menu: MenuItems::Home,
             update_crypto_store_task,
-            crypto_receive,
+            crypto_rx: crypto_receive,
+            crypto_store: vec![],
             crypto_table_state: TableState::default(),
         })
     }
@@ -45,8 +47,15 @@ impl App {
         self.select_menu
     }
 
-    pub fn get_crypto_ranking(&self) {
-
+    pub fn get_crypto_ranking(&mut self) -> Vec<CryptoPrint> {
+        match self.crypto_rx.try_recv() {
+            Ok(data_set) => {
+                self.crypto_store.clear();
+                self.crypto_store = data_set.clone();
+                data_set
+            },
+            Err(_) => self.crypto_store.clone(),
+        }
     }
 
     pub fn get_crypto_table_state(&self) -> TableState {

@@ -45,15 +45,14 @@ where
     f.render_widget(menu, chunks[0]);
 
     let _crypto_table_state = app.get_crypto_table_state();
-    let _crypto_data = app.get_crypto_ranking(); //vector描画するvectorを貰う。
+    let crypto_data = app.get_crypto_ranking(); //vector描画するvectorを貰う。
 
-    let v: Vec<Vec<std::string::String>> = vec![];
-    let table = get_table(v);
+    let table = get_table(crypto_data);
 
     f.render_widget(table, chunks[2]);
 }
 
-pub fn get_table<'a>(data: Vec<Vec<String>>) -> Table<'a> {
+pub fn get_table<'a>(data: Vec<CryptoPrint>) -> Table<'a> {
     let selected_style = Style::default().add_modifier(Modifier::REVERSED);
     let normal_style = Style::default().bg(Color::Blue);
     let header_cells = [

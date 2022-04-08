@@ -61,4 +61,33 @@ impl App {
     pub fn get_crypto_table_state(&self) -> TableState {
         self.crypto_table_state.clone()
     }
+
+    pub fn table_state_previous(&mut self, len: usize) {
+        let position = match self.crypto_table_state.selected() {
+            Some(i) => {
+                if i == 0 {
+                    len - 1
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
+        self.crypto_table_state.select(Some(position));
+    }
+
+    pub fn table_state_next(&mut self, len: usize) {
+        let position = match self.crypto_table_state.selected() {
+            Some(i) => {
+                if i >= (len - 1) {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.crypto_table_state.select(Some(position));
+    }
+
 }

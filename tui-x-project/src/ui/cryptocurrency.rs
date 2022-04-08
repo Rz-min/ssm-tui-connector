@@ -44,8 +44,14 @@ where
 
     f.render_widget(menu, chunks[0]);
 
-    let _crypto_table_state = app.get_crypto_table_state();
-    let crypto_data = app.get_crypto_ranking(); //vector描画するvectorを貰う。
+    //check last input
+
+    let crypto_data = app.get_crypto_ranking();
+
+    let data_length = crypto_data.len();
+
+    let crypto_table_state = app.get_crypto_table_state();
+    
 
     let table = get_table(crypto_data);
 
@@ -55,6 +61,7 @@ where
 pub fn get_table<'a>(data: Vec<CryptoPrint>) -> Table<'a> {
     let selected_style = Style::default().add_modifier(Modifier::REVERSED);
     let normal_style = Style::default().bg(Color::Blue);
+
     let header_cells = [
         "[r]ank",
         "[n]ame",
@@ -70,19 +77,20 @@ pub fn get_table<'a>(data: Vec<CryptoPrint>) -> Table<'a> {
     ]
     .iter()
     .map(|h| Cell::from(*h).style(Style::default().fg(Color::Red)));
+
     let header = Row::new(header_cells)
         .style(normal_style)
         .height(1)
         .bottom_margin(1);
 
-    let rows = data.clone().into_iter().map(|item| {
+    let rows = data.into_iter().map(|item| {
         let height = item
-            .iter()
             .map(|content| content.chars().filter(|c| *c == '\n').count())
             .max()
             .unwrap_or(0)
             + 1;
-        let cells = data.iter().map(|_c| {
+        
+            let cells = data.iter().map(|_c| {
             Cell::from(Spans::from(vec![
                 Span::from("1"),
                 Span::from("2"),

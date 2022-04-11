@@ -7,6 +7,7 @@ use tui::style::{Color, Modifier, Style};
 use tui::text::{Span, Spans};
 use tui::widgets::{Block, Borders, Cell, Row, Table};
 use tui::{backend::Backend, Frame};
+use termion::event::Key;
 
 #[derive(Debug, Clone)]
 pub struct CryptoPrint {
@@ -24,7 +25,7 @@ impl CryptoPrint {
     
 }
 
-pub fn draw_crypto<B>(f: &mut Frame<B>, app: &mut App, _handler: &mut EventHost)
+pub fn draw_crypto<B>(f: &mut Frame<B>, app: &mut App, handler: &mut EventHost)
 where
     B: Backend,
 {
@@ -44,14 +45,23 @@ where
 
     f.render_widget(menu, chunks[0]);
 
-    //check last input
-
     let crypto_data = app.get_crypto_ranking();
 
     let data_length = crypto_data.len();
 
+    match handler.get_input() {
+        termion::event::Key::PageUp => {
+            app.table_state_previous(data_length);
+            handler.last_input = Some(Key::Char('h'));
+        },
+        termion::event::Key::PageDown => {
+            app.table_state_next(data_length);
+            handler.last_input = Some(Key::Char('h'));
+        },
+        _ => {},
+    }
+
     let crypto_table_state = app.get_crypto_table_state();
-    
 
     let table = get_table(crypto_data);
 
@@ -85,12 +95,11 @@ pub fn get_table<'a>(data: Vec<CryptoPrint>) -> Table<'a> {
 
     let rows = data.into_iter().map(|item| {
         let height = item
-            .map(|content| content.chars().filter(|c| *c == '\n').count())
             .max()
             .unwrap_or(0)
             + 1;
         
-            let cells = data.iter().map(|_c| {
+        let cells = data.iter().map(|crypto| {
             Cell::from(Spans::from(vec![
                 Span::from("1"),
                 Span::from("2"),

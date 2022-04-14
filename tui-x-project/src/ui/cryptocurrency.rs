@@ -11,15 +11,33 @@ use termion::event::Key;
 
 #[derive(Debug, Clone)]
 pub struct CryptoPrint {
-    pub rnk: String,
+    pub cmc_rank: String,
+    pub name: String,
+    pub symbol: String,
+    pub circulating_supply: String,
+    pub total_supply: String,
+    pub market_cap_by_total_supply: String,
+    pub max_supply: String,
 }
 
 impl CryptoPrint {
     pub fn new(
-        rnk: String,
+        cmc_rank: String,
+        name: String,
+        symbol: String,
+        circulating_supply: String,
+        total_supply: String,
+        market_cap_by_total_supply: String,
+        max_supply: String,
     ) -> CryptoPrint {
         CryptoPrint { 
-            rnk,
+            cmc_rank,
+            name,
+            symbol,
+            circulating_supply,
+            total_supply,
+            market_cap_by_total_supply,
+            max_supply,
         }
     }
     
@@ -50,13 +68,13 @@ where
     let data_length = crypto_data.len();
 
     match handler.get_input() {
-        termion::event::Key::PageUp => {
-            app.table_state_previous(data_length);
-            handler.last_input = Some(Key::Char('h'));
-        },
-        termion::event::Key::PageDown => {
+        Key::Right => {
             app.table_state_next(data_length);
-            handler.last_input = Some(Key::Char('h'));
+            handler.last_input = None;
+        },
+        Key::Left => {
+            app.table_state_previous(data_length);
+            handler.last_input = None;
         },
         _ => {},
     }
@@ -65,11 +83,10 @@ where
 
     let table = get_table(crypto_data);
 
-    f.render_widget(table, chunks[2]);
+    f.render_stateful_widget(table, chunks[2], &mut app.crypto_table_state);
 }
 
 pub fn get_table<'a>(data: Vec<CryptoPrint>) -> Table<'a> {
-    let selected_style = Style::default().add_modifier(Modifier::REVERSED);
     let normal_style = Style::default().bg(Color::Blue);
 
     let header_cells = [
@@ -93,29 +110,18 @@ pub fn get_table<'a>(data: Vec<CryptoPrint>) -> Table<'a> {
         .height(1)
         .bottom_margin(1);
 
-    let rows = data.into_iter().map(|item| {
-        let height = item
-            .max()
-            .unwrap_or(0)
-            + 1;
-        
-        let cells = data.iter().map(|crypto| {
-            Cell::from(Spans::from(vec![
-                Span::from("1"),
-                Span::from("2"),
-                Span::from("3"),
-                Span::from("4"),
-                Span::from("5"),
-                Span::from("6"),
-                Span::from("7"),
-                Span::from("8"),
-                Span::from("9"),
-                Span::from("10"),
-                Span::from("11"),
-                Span::from("12"),
-            ]))
-        });
-        Row::new(cells).height(height as u16).bottom_margin(1)
+    let rows = data.into_iter().map(|crypto| {
+        let cells = Cell::from(Spans::from(vec![
+            Span::from(crypto.cmc_rank),
+            Span::from(crypto.name),
+            Span::from(crypto.symbol),
+            Span::from(crypto.circulating_supply),
+            Span::from(crypto.total_supply),
+            Span::from(crypto.market_cap_by_total_supply),
+            Span::from(crypto.max_supply),
+        ]));
+
+        Row::new(cells)
     });
 
     let table = Table::new(rows)
@@ -125,7 +131,7 @@ pub fn get_table<'a>(data: Vec<CryptoPrint>) -> Table<'a> {
                 .title("Cryptocurrency"),
         )
         .header(header)
-        .highlight_style(selected_style)
+        .highlight_style(Style::default().add_modifier(Modifier::REVERSED).fg(Color::Red))
         .highlight_symbol(">> ")
         .widths(&[
             Constraint::Percentage(5),
